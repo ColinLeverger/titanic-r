@@ -1,0 +1,6 @@
+"","n.non.miss","n.miss","n.miss.percent","n.unique","cat_1","freq_1","cat_2","freq_2","cat_3","freq_3","cat_4","freq_4","cat_5","freq_5","cat_6","freq_6","cat_7","freq_7","cat_8","freq_8","cat_9","freq_9","cat_10","freq_10"
+"Name",891,0,0,891,"Abbing, Mr. Anthony",1,"Abbott, Mr. Rossmore Edward",1,"Abbott, Mrs. Stanton (Rosa Hunt)","1","Abelson, Mr. Samuel","1","Abelson, Mrs. Samuel (Hannah Wizosky)","1","Adahl, Mr. Mauritz Nils Martin","1","Adams, Mr. John","1","Ahlin, Mrs. Johan (Johanna Persdotter Larsson)","1","Aks, Mrs. Sam (Leah Rosen)","1","Albimona, Mr. Nassef Cassem","1"
+"Sex",891,0,0,2,"male",577,"female",314,"","","","","","","","","","","","","","","",""
+"Ticket",891,0,0,681,"1601",7,"347082",7,"CA. 2343","7","3101295","6","347088","6","CA 2144","6","382652","5","S.O.C. 14879","5","113760","4","113781","4"
+"Cabin",204,687,77.1,148,"B96 B98",4,"C23 C25 C27",4,"G6","4","C22 C26","3","D","3","E101","3","F2","3","F33","3","B18","2","B20","2"
+"Embarked",889,2,0.22,4,"S",644,"C",168,"Q","77","","","","","","","","","","","","","",""
