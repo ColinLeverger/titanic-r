@@ -4,11 +4,13 @@
 
 install.packages("dataQualityR")
 install.packages("ggplot2")
+install.packages("vcd")
 install.packages("reshape2")
 library(dataQualityR)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
+library(vcd)
 
 # Set working directory
 setwd("/Users/colinleverger/Downloads/titanic-ml/")
@@ -19,9 +21,9 @@ train.data <- read.csv("data/train.csv",na.strings = missing.types)
 
 # Rename some cols for beter comprehension
 colnames(train.data)
-colnames(train.data)[colnames(train.data)=="SibSp"]  <- "Siblings_Spouses"
-colnames(train.data)[colnames(train.data)=="ParCh"]  <- "Parents_Children"
-colnames(train.data)[colnames(train.data)=="Pclass"] <- "Passenger_Class"
+colnames(train.data)[colnames(train.data)=="SibSp"]  <- "SiblingsSpouses"
+colnames(train.data)[colnames(train.data)=="ParCh"]  <- "ParentsChildren"
+colnames(train.data)[colnames(train.data)=="Pclass"] <- "PassengerClass"
 colnames(train.data)
 
 # DQR
@@ -42,4 +44,40 @@ ggplot(survived.long,aes(x=variable,y=value,fill=factor(Sex)))+
   geom_bar(stat="identity",position="dodge") +
   scale_fill_discrete(name="Gender")+
   xlab("People")+ylab("Population")
+
+barplot(table(train.data$Survived),
+        names.arg = c("Perished", "Survived"),
+        main="Survived",
+        col="black")
+
+barplot(table(train.data$PassengerClass),
+        main="Passenger Classes",
+        col="red")
+
+barplot(table(train.data$Sex),
+        main="Sex (gender)",
+        col="blue")
+
+hist(train.data$Age, main="Age", xlab = NULL, col="brown")
+hist(train.data$Fare, main="Fare", xlab = NULL, col="red")
+
+barplot(table(train.data$SiblingsSpouses),
+        main="Siblings & Spouses",
+        col="orange")
+
+barplot(table(train.data$Parch),
+        main="Parch (parents and kid)",
+        col="white")
+
+barplot(table(train.data$Embarked),
+        names.arg = c("Cherbourg", "Queenstown", "Southampton"),
+        main="Embarked",
+        col="yellow")
   
+mosaicplot(train.data$PassengerClass ~ train.data$Survived, 
+           main="Passenger Fate by Traveling Class", shade=FALSE, 
+           color=TRUE, xlab="Passenger Class", ylab="Survived")
+
+mosaicplot(train.data$Embarked ~ train.data$Survived, 
+           main="Passenger Fate by Embarked places", shade=FALSE, 
+           color=TRUE, xlab="Embarqued", ylab="Survived")
