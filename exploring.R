@@ -68,6 +68,20 @@ hist(train.data$Age,
 d <- density(train.data[!is.na(train.data$Age), ]$Age)
 plot(d, main = "Age density", xlab = NULL, col = "brown")
 
+# Explore distribution of ages and sex
+ggplot(train.data, aes(Age, fill = Sex)) +
+  geom_histogram(alpha = 0.5, aes(y = ..count..))
+
+# Explore old & young people survival
+count(train.data[train.data$Age >= 50 & train.data$Sex == "male", ])
+count(train.data[train.data$Age >= 50 & train.data$Sex == "female", ])
+
+ggplot(train.data[train.data$Age >= 50, ], aes(Survived, fill = Sex)) +
+  geom_bar(alpha = 0.5, aes(y = ..count..))
+
+ggplot(train.data[train.data$Age < 10, ], aes(Survived, fill = Sex)) +
+  geom_bar(alpha = 0.5, aes(y = ..count..))
+
 # Explore fare paid by passengers
 hist(train.data$Fare,
      main = "Fare",
