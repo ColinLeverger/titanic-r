@@ -1,0 +1,6 @@
+"","n.non.miss","n.miss","n.miss.percent","n.unique","cat_1","freq_1","cat_2","freq_2","cat_3","freq_3","cat_4","freq_4","cat_5","freq_5","cat_6","freq_6","cat_7","freq_7","cat_8","freq_8","cat_9","freq_9","cat_10","freq_10"
+"Name",1309,0,0,1307,"Connolly, Miss. Kate",2,"Kelly, Mr. James",2,"Abbing, Mr. Anthony","1","Abbott, Master. Eugene Joseph","1","Abbott, Mr. Rossmore Edward","1","Abbott, Mrs. Stanton (Rosa Hunt)","1","Abelseth, Miss. Karen Marie","1","Abelseth, Mr. Olaus Jorgensen","1","Abelson, Mr. Samuel","1","Abelson, Mrs. Samuel (Hannah Wizosky)","1"
+"Sex",1309,0,0,2,"male",843,"female",466,"","","","","","","","","","","","","","","",""
+"Ticket",1309,0,0,929,"CA. 2343",11,"1601",8,"CA 2144","8","3101295","7","347077","7","347082","7","PC 17608","7","S.O.C. 14879","7","113781","6","19950","6"
+"Cabin",295,1014,77.46,187,"C23 C25 C27",6,"B57 B59 B63 B66",5,"G6","5","B96 B98","4","C22 C26","4","C78","4","D","4","F2","4","F33","4","F4","4"
+"Embarked",1307,2,0.15,4,"S",914,"C",270,"Q","123","","","","","","","","","","","","","",""

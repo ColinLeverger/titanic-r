@@ -19,38 +19,30 @@ setwd("/Users/colinleverger/Downloads/titanic-ml/")
 # Load data
 missing.types <- c("NA", "")
 train.data <- read.csv("data/train.csv", na.strings = missing.types)
-
-# Rename some cols for beter comprehension
-colnames(train.data)
-colnames(train.data)[colnames(train.data) == "SibSp"]  <-
-  "SiblingsSpouses"
-colnames(train.data)[colnames(train.data) == "ParCh"]  <-
-  "ParentsChildren"
-colnames(train.data)[colnames(train.data) == "Pclass"] <-
-  "PassengerClass"
-colnames(train.data)
+test.data <- read.csv("data/test.csv", na.string = missing.types)
+total.data <- bind_rows(train.data, test.data)
 
 #### DQR ####
-checkDataQuality(train.data, out.file.num = "DQR_cont", out.file.cat = "DQR_cat")
-dqr.cont <- read.csv("DQR_cont")
-dqr.cat  <- read.csv("DQR_cat")
+checkDataQuality(total.data,
+                 out.file.num = "DQR_cont.csv",
+                 out.file.cat = "DQR_cat.csv")
+dqr.cont <- read.csv("DQR_cont.csv")
+dqr.cat  <- read.csv("DQR_cat.csv")
 
-typeof(train.data)
-
-#### Exploring the data ####
+#### Explore the data ####
+# Explore difference between men's and women's death
 survived <- train.data %>%
   group_by(Sex) %>%
   summarise(Survived = sum(Survived),
             Died = n() - sum(Survived))
 
-# Exploring difference between men's and women's death
 survived.long <- melt(survived, id.vars = "Sex")
 ggplot(survived.long, aes(x = variable, y = value, fill = factor(Sex))) +
   geom_bar(stat = "identity", position = "dodge") +
   scale_fill_discrete(name = "Gender") +
   xlab("People") + ylab("Population")
 
-# Exploring survival rates
+# Explore survival rates
 barplot(
   table(train.data$Survived),
   names.arg = c("Perished", "Survived"),
@@ -58,17 +50,17 @@ barplot(
   col = "black"
 )
 
-# Exploring passenger classes
-barplot(table(train.data$PassengerClass),
+# Explore passenger classes
+barplot(table(train.data$Pclass),
         main = "Passenger Classes",
         col = "red")
 
-# Exploring gender repartition
+# Explore gender repartition
 barplot(table(train.data$Sex),
         main = "Sex (gender)",
         col = "blue")
 
-# Exploring age repartition
+# Explore age repartition
 hist(train.data$Age,
      main = "Age",
      xlab = NULL,
@@ -76,23 +68,23 @@ hist(train.data$Age,
 d <- density(train.data[!is.na(train.data$Age), ]$Age)
 plot(d, main = "Age density", xlab = NULL, col = "brown")
 
-# Exploring fare paid by passengers
+# Explore fare paid by passengers
 hist(train.data$Fare,
      main = "Fare",
      xlab = NULL,
      col = "red")
 
-# Exploring Siblings and spouses repartition
-barplot(table(train.data$SiblingsSpouses),
+# Explore Siblings and spouses repartition
+barplot(table(train.data$SibSp),
         main = "Siblings & Spouses",
         col = "orange")
 
-# Exploring parents and kid repartition
+# Explore parents and kid repartition
 barplot(table(train.data$Parch),
         main = "Parch (parents and kid)",
         col = "white")
 
-# Exploring boarding location
+# Explore boarding location
 barplot(
   table(train.data$Embarked),
   names.arg = c("Cherbourg", "Queenstown", "Southampton"),
@@ -100,9 +92,9 @@ barplot(
   col = "yellow"
 )
 
-# Exploring passenger Fate by Traveling Class
+# Explore passenger Fate by Traveling Class
 mosaicplot(
-  train.data$PassengerClass ~ train.data$Survived,
+  train.data$Pclass ~ train.data$Survived,
   main = "Passenger Fate by Traveling Class",
   shade = FALSE,
   color = TRUE,
@@ -110,7 +102,7 @@ mosaicplot(
   ylab = "Survived"
 )
 
-# Exploring passenger Fate by Embarked places
+# Explore passenger Fate by Embarked places
 mosaicplot(
   train.data$Embarked ~ train.data$Survived,
   main = "Passenger Fate by Embarked places",
@@ -120,22 +112,77 @@ mosaicplot(
   ylab = "Survived"
 )
 
-#### Treating the data ####
-# Computing median and mean
-mean_age <- train.data[!is.na(train.data$Age), ] %>%
+# Explore passenger Travelling Class by Age
+boxplot(
+  Age ~ Pclass,
+  data = train.data,
+  main = "Passenger Travelling Class by Age",
+  xlab = "Passenger Class",
+  ylab = "Age"
+)
+
+# Computing median and mean for age
+mean.age <- train.data[!is.na(train.data$Age), ] %>%
   group_by(Sex) %>%
   summarise(
-    Sum = sum(Age),
-    "Population" = n(),
     Mean = mean(Age),
     Mediane = median(Age)
   )
 
-# Replacing missing ages
-train.data[is.na(train.data$Age) & train.data$Sex == "male", ]$Age <- 
-  mean_age[mean_age$Sex == 'male', ]$Mediane
+# Extracting values "Mr", ... and create new categorical column
+train.data$Title <- gsub('(.*, )|(\\..*)', '', train.data$Name)
+train.data$Name <-
+  gsub('(, [a-zA-Z]{,20}. )', ', ', train.data$Name)
 
-train.data[is.na(train.data$Age) & train.data$Sex == "female", ]$Age <- 
-  mean_age[mean_age$Sex == 'female', ]$Mediane
-  
+# Displaying repartition of the titles
+barplot(
+  table(train.data$Title),
+  main = "Title",
+  col = "blue"
+)
 
+# Linking it to the sex...
+table(train.data$Sex, train.data$Title)
+
+# Treatment of the rare titles
+rare.title <- c('Dona', 'Lady', 'the Countess','Capt', 'Col', 'Don', 
+                'Dr', 'Major', 'Rev', 'Sir', 'Jonkheer')
+
+# TODO entire dataset
+train.data$Title[train.data$Title == 'Mlle']        <- 'Miss' 
+train.data$Title[train.data$Title == 'Ms']          <- 'Miss'
+train.data$Title[train.data$Title == 'Mme']         <- 'Mrs' 
+train.data$Title[train.data$Title %in% rare.title]  <- 'RareTitle'
+
+# Explore result again
+barplot(
+  table(train.data$Title),
+  main = "Titles",
+  col = "blue"
+)
+table(train.data$Sex, train.data$Title)
+
+# Explore families
+train.data$FamilySize = train.data$SibSp + train.data$Parch + 1
+barplot(
+  table(train.data$FamilySize),
+  main = "Family size repartition",
+  col = "red")
+
+ggplot(train.data, aes(x = FamilySize, fill = factor(Survived))) +
+  geom_bar(stat='count', position='dodge') +
+  scale_x_continuous(breaks=c(1:11)) +
+  labs(x = 'Family Size')
+
+# TODO entire dataset
+train.data$FamilySizeD[train.data$FamilySize == 1] <- 'singleton'
+train.data$FamilySizeD[train.data$FamilySize > 1 & train.data$FamilySize < 5] <- 'small'
+train.data$FamilySizeD[train.data$FamilySize >= 5] <- 'big'
+
+#### Replace missing values ####
+# Dummy method: replace age by median for gender
+train.data[is.na(train.data$Age) & train.data$Sex == "male", ]$Age <-
+  mean.age[mean.age$Sex == 'male', ]$Mediane
+
+train.data[is.na(train.data$Age) & train.data$Sex == "female", ]$Age <-
+  mean.age[mean.age$Sex == 'female', ]$Mediane
