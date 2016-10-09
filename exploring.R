@@ -65,7 +65,7 @@ hist(train.data$Age,
      main = "Age",
      xlab = NULL,
      col = "brown")
-d <- density(train.data[!is.na(train.data$Age), ]$Age)
+d <- density(train.data[!is.na(train.data$Age),]$Age)
 plot(d, main = "Age density", xlab = NULL, col = "brown")
 
 # Explore distribution of ages and sex
@@ -73,13 +73,15 @@ ggplot(train.data, aes(Age, fill = Sex)) +
   geom_histogram(alpha = 0.5, aes(y = ..count..))
 
 # Explore old & young people survival
-count(train.data[train.data$Age >= 50 & train.data$Sex == "male", ])
-count(train.data[train.data$Age >= 50 & train.data$Sex == "female", ])
+count(train.data[train.data$Age >= 50 & 
+                   train.data$Sex == "male",])
+count(train.data[train.data$Age >= 50 &
+                   train.data$Sex == "female",])
 
-ggplot(train.data[train.data$Age >= 50, ], aes(Survived, fill = Sex)) +
+ggplot(train.data[train.data$Age >= 50,], aes(Survived, fill = Sex)) +
   geom_bar(alpha = 0.5, aes(y = ..count..))
 
-ggplot(train.data[train.data$Age < 10, ], aes(Survived, fill = Sex)) +
+ggplot(train.data[train.data$Age < 10,], aes(Survived, fill = Sex)) +
   geom_bar(alpha = 0.5, aes(y = ..count..))
 
 # Explore fare paid by passengers
@@ -136,67 +138,94 @@ boxplot(
 )
 
 # Computing median and mean for age
-mean.age <- train.data[!is.na(train.data$Age), ] %>%
+mean.age <- train.data[!is.na(train.data$Age),] %>%
   group_by(Sex) %>%
-  summarise(
-    Mean = mean(Age),
-    Mediane = median(Age)
-  )
+  summarise(Mean = mean(Age),
+            Mediane = median(Age))
 
 # Extracting values "Mr", ... and create new categorical column
 train.data$Title <- gsub('(.*, )|(\\..*)', '', train.data$Name)
 train.data$Name <-
   gsub('(, [a-zA-Z]{,20}. )', ', ', train.data$Name)
+train.data$Surname <-
+  gsub('(.*,)', '', train.data$Name)
+train.data$Name <-
+  gsub('(,.*)', '', train.data$Name)
 
 # Displaying repartition of the titles
-barplot(
-  table(train.data$Title),
-  main = "Title",
-  col = "blue"
-)
+barplot(table(train.data$Title),
+        main = "Title",
+        col = "blue")
 
 # Linking it to the sex...
 table(train.data$Sex, train.data$Title)
 
 # Treatment of the rare titles
-rare.title <- c('Dona', 'Lady', 'the Countess','Capt', 'Col', 'Don', 
-                'Dr', 'Major', 'Rev', 'Sir', 'Jonkheer')
+rare.title <-
+  c(
+    'Dona',
+    'Lady',
+    'the Countess',
+    'Capt',
+    'Col',
+    'Don',
+    'Dr',
+    'Major',
+    'Rev',
+    'Sir',
+    'Jonkheer'
+  )
 
 # TODO entire dataset
-train.data$Title[train.data$Title == 'Mlle']        <- 'Miss' 
+train.data$Title[train.data$Title == 'Mlle']        <- 'Miss'
 train.data$Title[train.data$Title == 'Ms']          <- 'Miss'
-train.data$Title[train.data$Title == 'Mme']         <- 'Mrs' 
+train.data$Title[train.data$Title == 'Mme']         <- 'Mrs'
 train.data$Title[train.data$Title %in% rare.title]  <- 'RareTitle'
 
 # Explore result again
-barplot(
-  table(train.data$Title),
-  main = "Titles",
-  col = "blue"
-)
+barplot(table(train.data$Title),
+        main = "Titles",
+        col = "blue")
 table(train.data$Sex, train.data$Title)
 
 # Explore families
 train.data$FamilySize = train.data$SibSp + train.data$Parch + 1
-barplot(
-  table(train.data$FamilySize),
-  main = "Family size repartition",
-  col = "red")
+barplot(table(train.data$FamilySize),
+        main = "Family size repartition",
+        col = "red")
 
 ggplot(train.data, aes(x = FamilySize, fill = factor(Survived))) +
-  geom_bar(stat='count', position='dodge') +
-  scale_x_continuous(breaks=c(1:11)) +
+  geom_bar(stat = 'count', position = 'dodge') +
+  scale_x_continuous(breaks = c(1:11)) +
   labs(x = 'Family Size')
 
 # TODO entire dataset
 train.data$FamilySizeD[train.data$FamilySize == 1] <- 'singleton'
-train.data$FamilySizeD[train.data$FamilySize > 1 & train.data$FamilySize < 5] <- 'small'
+train.data$FamilySizeD[train.data$FamilySize > 1 &
+                         train.data$FamilySize < 5] <- 'small'
 train.data$FamilySizeD[train.data$FamilySize >= 5] <- 'big'
 
 #### Replace missing values ####
-# Dummy method: replace age by median for gender
-train.data[is.na(train.data$Age) & train.data$Sex == "male", ]$Age <-
-  mean.age[mean.age$Sex == 'male', ]$Mediane
 
-train.data[is.na(train.data$Age) & train.data$Sex == "female", ]$Age <-
-  mean.age[mean.age$Sex == 'female', ]$Mediane
+View(train.data[is.na(train.data$Embarked),])
+
+View(
+  train.data %>%
+    group_by(Ticket) %>%
+    summarise(NumberOfTickets = n()) %>%
+    arrange(desc(NumberOfTickets)) %>%
+    filter(NumberOfTickets > 1)
+)
+
+View(train.data[train.data$Ticket == 1601,])
+View(train.data[train.data$Ticket == 347082,])
+View(train.data[train.data$Ticket == "CA. 2343",])
+
+# Dummy method: replace age by median for gender
+train.data[is.na(train.data$Age) &
+             train.data$Sex == "male",]$Age <-
+  mean.age[mean.age$Sex == 'male',]$Mediane
+
+train.data[is.na(train.data$Age) &
+             train.data$Sex == "female",]$Age <-
+  mean.age[mean.age$Sex == 'female',]$Mediane
