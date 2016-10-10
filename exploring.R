@@ -19,15 +19,58 @@ setwd("/Users/colinleverger/Downloads/titanic-ml/")
 # Load data
 missing.types <- c("NA", "")
 train.data <- read.csv("data/train.csv", na.strings = missing.types)
-test.data <- read.csv("data/test.csv", na.string = missing.types)
+test.data  <- read.csv("data/test.csv",  na.strings = missing.types)
 total.data <- bind_rows(train.data, test.data)
 
 #### DQR ####
-checkDataQuality(total.data,
-                 out.file.num = "DQR_cont.csv",
-                 out.file.cat = "DQR_cat.csv")
+checkDataQuality(
+  total.data,
+  out.file.num = "DQR_cont.csv",
+  out.file.cat = "DQR_cat.csv"
+)
 dqr.cont <- read.csv("DQR_cont.csv")
 dqr.cat  <- read.csv("DQR_cat.csv")
+
+#### Work on data ####
+### Extract Titles and create new categorical column ###
+train.data$Title   <- gsub('(.*, )|(\\..*)', '', train.data$Name)
+train.data$Name    <- gsub('(, [a-zA-Z]{,20}. )', ', ', train.data$Name)
+train.data$Surname <- gsub('(.*,)', '', train.data$Name)
+train.data$Name    <- gsub('(,.*)', '', train.data$Name)
+
+# Rare titles management
+rare.titles <-
+  c(
+    'Dona',
+    'Lady',
+    'the Countess',
+    'Capt',
+    'Col',
+    'Don',
+    'Dr',
+    'Major',
+    'Rev',
+    'Sir',
+    'Jonkheer'
+  )
+
+# Replace rare titles with correct values
+train.data$Title[train.data$Title == 'Mlle']        <- 'Miss'
+train.data$Title[train.data$Title == 'Ms']          <- 'Miss'
+train.data$Title[train.data$Title == 'Mme']         <- 'Mrs'
+train.data$Title[train.data$Title %in% rare.title]  <- 'RareTitle'
+
+### Create families description ###
+# First, add family size
+train.data$FamilySize = train.data$SibSp + train.data$Parch + 1
+
+# Then, add family size categorical feature
+train.data$FamilySizeD[train.data$FamilySize == 1] <- 
+  'singleton'
+train.data$FamilySizeD[train.data$FamilySize > 1 & train.data$FamilySize < 5] <- 
+  'small'
+train.data$FamilySizeD[train.data$FamilySize >= 5] <- 
+  'big'
 
 #### Explore the data ####
 # Explore difference between men's and women's death
@@ -51,20 +94,26 @@ barplot(
 )
 
 # Explore passenger classes
-barplot(table(train.data$Pclass),
-        main = "Passenger Classes",
-        col = "red")
+barplot(
+  table(train.data$Pclass),
+  main = "Passenger Classes",
+  col = "red"
+)
 
 # Explore gender repartition
-barplot(table(train.data$Sex),
-        main = "Sex (gender)",
-        col = "blue")
+barplot(
+  table(train.data$Sex),
+  main = "Sex (gender)",
+  col = "blue"
+)
 
 # Explore age repartition
-hist(train.data$Age,
-     main = "Age",
-     xlab = NULL,
-     col = "brown")
+hist(
+  train.data$Age,
+  main = "Age",
+  xlab = NULL,
+  col = "brown"
+)
 d <- density(train.data[!is.na(train.data$Age),]$Age)
 plot(d, main = "Age density", xlab = NULL, col = "brown")
 
@@ -73,10 +122,8 @@ ggplot(train.data, aes(Age, fill = Sex)) +
   geom_histogram(alpha = 0.5, aes(y = ..count..))
 
 # Explore old & young people survival
-count(train.data[train.data$Age >= 50 & 
-                   train.data$Sex == "male",])
-count(train.data[train.data$Age >= 50 &
-                   train.data$Sex == "female",])
+count(train.data[train.data$Age >= 50 & train.data$Sex == "male",])
+count(train.data[train.data$Age >= 50 & train.data$Sex == "female",])
 
 ggplot(train.data[train.data$Age >= 50,], aes(Survived, fill = Sex)) +
   geom_bar(alpha = 0.5, aes(y = ..count..))
@@ -85,20 +132,26 @@ ggplot(train.data[train.data$Age < 10,], aes(Survived, fill = Sex)) +
   geom_bar(alpha = 0.5, aes(y = ..count..))
 
 # Explore fare paid by passengers
-hist(train.data$Fare,
-     main = "Fare",
-     xlab = NULL,
-     col = "red")
+hist(
+  train.data$Fare,
+  main = "Fare",
+  xlab = NULL,
+  col = "red"
+)
 
 # Explore Siblings and spouses repartition
-barplot(table(train.data$SibSp),
-        main = "Siblings & Spouses",
-        col = "orange")
+barplot(
+  table(train.data$SibSp),
+  main = "Siblings & Spouses",
+  col = "orange"
+)
 
 # Explore parents and kid repartition
-barplot(table(train.data$Parch),
-        main = "Parch (parents and kid)",
-        col = "white")
+barplot(
+  table(train.data$Parch),
+  main = "Parch (parents and kid)",
+  col = "white"
+)
 
 # Explore boarding location
 barplot(
@@ -137,91 +190,91 @@ boxplot(
   ylab = "Age"
 )
 
-# Computing median and mean for age
+# Compute median and mean for age
 mean.age <- train.data[!is.na(train.data$Age),] %>%
   group_by(Sex) %>%
   summarise(Mean = mean(Age),
             Mediane = median(Age))
 
-# Extracting values "Mr", ... and create new categorical column
-train.data$Title <- gsub('(.*, )|(\\..*)', '', train.data$Name)
-train.data$Name <-
-  gsub('(, [a-zA-Z]{,20}. )', ', ', train.data$Name)
-train.data$Surname <-
-  gsub('(.*,)', '', train.data$Name)
-train.data$Name <-
-  gsub('(,.*)', '', train.data$Name)
+# Display repartition of the titles
+barplot(
+  table(train.data$Title),
+  main = "Title",
+  col = "blue"
+)
 
-# Displaying repartition of the titles
-barplot(table(train.data$Title),
-        main = "Title",
-        col = "blue")
-
-# Linking it to the sex...
+# Link it to the sex...
 table(train.data$Sex, train.data$Title)
-
-# Treatment of the rare titles
-rare.title <-
-  c(
-    'Dona',
-    'Lady',
-    'the Countess',
-    'Capt',
-    'Col',
-    'Don',
-    'Dr',
-    'Major',
-    'Rev',
-    'Sir',
-    'Jonkheer'
-  )
-
-# TODO entire dataset
-train.data$Title[train.data$Title == 'Mlle']        <- 'Miss'
-train.data$Title[train.data$Title == 'Ms']          <- 'Miss'
-train.data$Title[train.data$Title == 'Mme']         <- 'Mrs'
-train.data$Title[train.data$Title %in% rare.title]  <- 'RareTitle'
 
 # Explore result again
-barplot(table(train.data$Title),
-        main = "Titles",
-        col = "blue")
+barplot(
+  table(train.data$Title),
+  main = "Titles",
+  col = "blue"
+)
 table(train.data$Sex, train.data$Title)
 
-# Explore families
-train.data$FamilySize = train.data$SibSp + train.data$Parch + 1
+# Explore families 
+# Size:
 barplot(table(train.data$FamilySize),
         main = "Family size repartition",
         col = "red")
 
+# Survival vs Size:
 ggplot(train.data, aes(x = FamilySize, fill = factor(Survived))) +
   geom_bar(stat = 'count', position = 'dodge') +
   scale_x_continuous(breaks = c(1:11)) +
   labs(x = 'Family Size')
 
-# TODO entire dataset
-train.data$FamilySizeD[train.data$FamilySize == 1] <- 'singleton'
-train.data$FamilySizeD[train.data$FamilySize > 1 &
-                         train.data$FamilySize < 5] <- 'small'
-train.data$FamilySizeD[train.data$FamilySize >= 5] <- 'big'
+#### Duplicated ticket number investigations ####
+duplicated.tickets <- train.data %>%
+  group_by(Ticket) %>%
+  summarise(NumberOfTickets = n()) %>%
+  arrange(desc(NumberOfTickets)) %>%
+  filter(NumberOfTickets > 1)
 
-#### Replace missing values ####
-
-View(train.data[is.na(train.data$Embarked),])
-
-View(
-  train.data %>%
-    group_by(Ticket) %>%
-    summarise(NumberOfTickets = n()) %>%
-    arrange(desc(NumberOfTickets)) %>%
-    filter(NumberOfTickets > 1)
-)
+View(duplicated.tickets)
 
 View(train.data[train.data$Ticket == 1601,])
-View(train.data[train.data$Ticket == 347082,])
+View(train.data[train.data$Ticket == "PC 17477",])
 View(train.data[train.data$Ticket == "CA. 2343",])
 
-# Dummy method: replace age by median for gender
+# Loop to find all duplicated ticket number not in familly
+strange.dupes <- list()
+strange.dupes.count = 1
+for (ticket in duplicated.tickets$Ticket) {
+  actual.ticket.names <-
+    unique(train.data[train.data$Ticket == ticket,]$Name)
+  if (length(actual.ticket.names) > 1) {
+    strange.dupes[[strange.dupes.count]] <- ticket
+    strange.dupes.count = strange.dupes.count + 1
+  }
+}
+
+all.strange.dupes <-
+  subset(train.data, train.data$Ticket %in% strange.dupes)
+
+dupes.ticket.survival.rate <- all.strange.dupes %>%
+  group_by(Ticket) %>%
+  summarise(SurvivalRate = sum(Survived) / n()) %>%
+  arrange(SurvivalRate)
+
+dupes.ticket.survival.rate$SurvivalRateD[dupes.ticket.survival.rate$SurvivalRate == 0] <-
+  "died"
+dupes.ticket.survival.rate$SurvivalRateD[dupes.ticket.survival.rate$SurvivalRate < 0.33 &
+                                           dupes.ticket.survival.rate$SurvivalRate > 0.1] <-
+  "low"
+dupes.ticket.survival.rate$SurvivalRateD[dupes.ticket.survival.rate$SurvivalRate >= 0.33 &
+                                           dupes.ticket.survival.rate$SurvivalRate < 0.66] <-
+  "medium"
+dupes.ticket.survival.rate$SurvivalRateD[dupes.ticket.survival.rate$SurvivalRate >= 0.66] <-
+  "high"
+
+barplot(table(dupes.ticket.survival.rate$SurvivalRateD),
+        main = "Survival rate for duplicated tickets",
+        col = "violet")
+
+#### Dummy method: replace age by median for gender ####
 train.data[is.na(train.data$Age) &
              train.data$Sex == "male",]$Age <-
   mean.age[mean.age$Sex == 'male',]$Mediane
