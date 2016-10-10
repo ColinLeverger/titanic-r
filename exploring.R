@@ -2,7 +2,6 @@
 
 #### General setups ####
 # Packages managemement
-
 install.packages("dataQualityR")
 install.packages("ggplot2")
 install.packages("vcd")
@@ -58,7 +57,7 @@ rare.titles <-
 train.data$Title[train.data$Title == 'Mlle']        <- 'Miss'
 train.data$Title[train.data$Title == 'Ms']          <- 'Miss'
 train.data$Title[train.data$Title == 'Mme']         <- 'Mrs'
-train.data$Title[train.data$Title %in% rare.title]  <- 'RareTitle'
+train.data$Title[train.data$Title %in% rare.titles]  <- 'RareTitle'
 
 ### Create families description ###
 # First, add family size
@@ -71,6 +70,26 @@ train.data$FamilySizeD[train.data$FamilySize > 1 & train.data$FamilySize < 5] <-
   'small'
 train.data$FamilySizeD[train.data$FamilySize >= 5] <- 
   'big'
+
+# Deal with missing boarding
+View(train.data[is.na(train.data$Embarked),])
+
+# Get rid of our missing passenger IDs
+embark.fare <- train.data %>%
+  filter(PassengerId != 62 & PassengerId != 830)
+
+# Use ggplot2 to visualize embarkment, passenger class, & median fare
+ggplot(embark.fare, aes(x = Embarked, y = Fare, fill = factor(Pclass))) +
+  geom_boxplot() +
+  geom_hline(aes(yintercept=80), 
+             colour='red', linetype='dashed', lwd=2) +
+  scale_y_continuous()
+
+train.data[(train.data$PassengerId == 62 | train.data$PassengerId == 830),]$Embarked <- "C"
+
+# Deal with guys with several cabins (family?)
+train.data$SeveralCabins <- 0
+train.data[grepl(" ", train.data$Cabin),]$SeveralCabins <- 1
 
 #### Explore the data ####
 # Explore difference between men's and women's death
