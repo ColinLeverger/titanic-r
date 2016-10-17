@@ -1,5 +1,9 @@
 #### Explore Titanic dataset #####
 
+# IMPORTANT NOTE: followed the excellent tutorials at the following addresses:
+# https://www.kaggle.com/mrisdal/titanic/exploring-survival-on-the-titanic
+# https://github.com/wehrley/wehrley.github.io/blob/master/SOUPTONUTS.md
+
 #### General setups ####
 # Packages managemement
 install.packages("dataQualityR")
