@@ -6,19 +6,21 @@ install.packages("dataQualityR")
 install.packages("ggplot2")
 install.packages("vcd")
 install.packages("reshape2")
+install.packages('randomForest')
 library(dataQualityR)
 library(dplyr)
 library(ggplot2)
 library(reshape2)
 library(vcd)
+library('randomForest') 
 
 # Set working directory
 setwd("/Users/colinleverger/Documents/Experiments/kaggle/titanic-ml")
 
 # Load data
 missing.types <- c("NA", "")
-train.data <- read.csv("data/train.csv", na.strings = missing.types)
-test.data  <- read.csv("data/test.csv",  na.strings = missing.types)
+train.data <- read.csv("data/train.csv", na.strings = missing.types, stringsAsFactors = F)
+test.data  <- read.csv("data/test.csv",  na.strings = missing.types, stringsAsFactors = F)
 total.data <- bind_rows(train.data, test.data)
 
 #### DQR ####
@@ -322,3 +324,49 @@ total.data[is.na(total.data$Age) & total.data$Sex == "female",]$Age <-
 
 # Method 2: predictive imputation
 # TODO
+
+#### Prediction ####
+### Split the train and test data
+total.data <- as.data.frame(unclass(total.data))
+train <- total.data[1:891,]
+test  <- total.data[892:1309,]
+
+### Building the model
+# Random seed
+set.seed(42)
+
+model1 <- randomForest(factor(Survived) ~ Pclass + Sex + Age + SibSp + 
+                        Fare + Title + 
+                        WomOrChildren + Deck,
+                        data = train)
+
+plot(model1, ylim=c(0,0.5))
+
+### Learning from the model created
+# Get importance
+importance    <- importance(model1)
+varImportance <- data.frame(Variables = row.names(importance), 
+                            Importance = round(importance[ ,'MeanDecreaseGini'],2))
+
+# Create a rank variable based on importance
+rankImportance <- varImportance %>%
+  mutate(Rank = paste0('#',dense_rank(desc(Importance))))
+
+# Use ggplot2 to visualize the relative importance of variables
+ggplot(rankImportance, aes(x = reorder(Variables, Importance), 
+                           y = Importance, fill = Importance)) +
+  geom_bar(stat='identity') + 
+  geom_text(aes(x = Variables, y = 0.5, label = Rank),
+            hjust=0, vjust=0.55, size = 4, colour = 'red') +
+  labs(x = 'Variables') +
+  coord_flip()
+
+### Prediction
+# Predict...
+prediction <- predict(model1, test)
+
+# Save prediction
+solution <- data.frame(PassengerID = test$PassengerId, Survived = prediction)
+
+# Write prediction on disk
+write.csv(solution, file = 'model1.csv', row.names = F)
