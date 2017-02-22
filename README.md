@@ -4,6 +4,6 @@ Scripts to explore the Titanic Dataset, with R. The goal is to do machine learni
 
 # Tutorials followed
 I followed the excellent tutorials, which can be seen at the following addresses:
-https://www.kaggle.com/mrisdal/titanic/exploring-survival-on-the-titanic
-https://github.com/wehrley/wehrley.github.io/blob/master/SOUPTONUTS.md
+- https://www.kaggle.com/mrisdal/titanic/exploring-survival-on-the-titanic
+- https://github.com/wehrley/wehrley.github.io/blob/master/SOUPTONUTS.md
 
